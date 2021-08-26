@@ -1,0 +1,7 @@
+apiVersion: v2
+name: lethe
+description: A Helm chart that is used to build secret stores and external secrets
+
+type: application
+
+version: 0.0.1

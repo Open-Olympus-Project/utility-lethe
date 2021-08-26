@@ -1,0 +1,84 @@
+secretStores:
+  - name: foobar-secret-store
+  
+    # provider field contains the configuration to access the provider
+    # which contains the secret exactly one provider must be configured.
+    providers:
+      # vault:
+      #   server: "http://vault.tooling.svc:8200"
+      #   # Path is the mount path of the Vault KV backend endpoint
+      #   path: "secrets"
+      #   # Version is the Vault KV secret engine version.
+      #   # This can be either "v1" or "v2", defaults to "v2"
+      #   version: "v2"
+      #   auth:
+      #     # Authenticate against Vault using a Kubernetes ServiceAccount
+      #     # token stored in a Secret.
+      #     # https://www.vaultproject.io/docs/auth/kubernetes
+      #     kubernetes:
+      #       # Path where the Kubernetes authentication backend is mounted in Vault
+      #       mountPath: "kubernetes"
+      #       # A required field containing the Vault Role to assume.
+      #       role: "secrets-reader"
+
+secrets:
+  - name: foobar-secret
+
+    # SecretStoreRef defines which SecretStore to use when fetching the secret data
+    secretStore:
+      backend: foobar-secret-store
+      kind: SecretStore # or ClusterSecretStore
+
+    # RefreshInterval is the amount of time before the values reading again from the SecretStore provider
+    # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h" (from time.ParseDuration)
+    # May be set to zero to fetch and create it once
+    refreshInterval: '15s'
+
+    # the target describes the secret that shall be created
+    # there can only be one target per ExternalSecret
+    target:
+      # The secret name of the resource
+      # Defaults to .metadata.name of the ExternalSecret
+      # It is immutable
+      name: foobar-secret
+
+      # Specify a blueprint for the resulting Kind=Secret
+      template:
+        # type: opauge
+
+        # metadata:
+        #   annotations: {}
+        #   labels: {}
+
+        # Use inline templates to construct your desired config file that contains your secret
+        # data:
+        #   config.yml: |
+        #     foo: {{ .foo }}
+        #     bar: {{ .bar }}
+
+      # Uses an existing template from configmap
+      # Secret is fetched, merged and templated within the referenced configMap data
+      # It does not update the configmap, it creates a secret with: data["foobar.yml"] = ...result...
+      templateFrom: {}
+        # - configMap:
+        #   name: foobar
+        #   items:
+        #   - key: foobar.yaml
+    
+    # Data defines the connection between the Kubernetes Secret keys and the Provider data
+    data: {}
+      # - secretKey: foo
+      #   remoteRef:
+      #     key: secrets/foobar
+      #     property: foo
+      # - secretKey: bar
+      #   remoteRef:
+      #     key: secrets/foobar
+      #     property: bar
+
+    # Used to fetch all properties from the Provider key
+    # If multiple dataFrom are specified, secrets are merged in the specified order
+    dataFrom: {}
+    # - key: provider-key
+    #   version: provider-key-version
+    #   property: provider-key-property
